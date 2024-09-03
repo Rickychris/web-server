@@ -1,7 +1,7 @@
 const path = require('path');
 const express = require('express');
 const hbs = require('hbs');
-
+const getForcast = require('./utils/getForcast');
 const app = express();
 
 // Define paths for Express config
@@ -40,10 +40,32 @@ app.get('/help', (req, res) => {
 })
 
 app.get('/weather', (req, res) => {
+    if (!req.query.address) {
+        return res.send({
+            error: 'You must provide an address'
+        })
+    }
+    getForcast(req.query.address, (error, { description, temperature, feelslike, location}={}) => {
+        if (error) {
+            return res.send({ error })
+        }
+        return res.send({
+            forecast: `${description}. It is currently ${temperature} degrees out. It feels like ${feelslike} degrees in ${location}.`,
+            location: req.query.address,
+            address: req.query.address
+        })
+    })
+})
+
+app.get('/products', (req, res) => {
+    if (!req.query.search) {
+        return res.send({
+            error: 'You must provide a search term'
+        })
+    }
     res.send({
-        forecast: 'It is snowing',
-        location: 'Philadelphia'
-    });
+        products: []
+    })
 })
 
 app.get('/help/*', (req, res) => {
